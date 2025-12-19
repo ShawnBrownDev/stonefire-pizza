@@ -1,4 +1,4 @@
-import { getUserRole } from "../../../lib/auth";
+import { getUserRole } from "../../lib/auth";
 import { redirect } from "next/navigation";
 import UsersTable from "./UsersTable";
 

@@ -32,6 +32,7 @@ export default defineSchema({
 
   users: defineTable({
     email: v.string(),
+    passwordHash: v.optional(v.string()), // Hashed password (optional for existing users)
     role: v.union(v.literal("admin"), v.literal("jobs"), v.literal("catering"), v.literal("both")),
     createdAt: v.number(),
   }).index("by_email", ["email"]),

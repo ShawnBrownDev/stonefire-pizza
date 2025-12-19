@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 import { useState } from "react";
 import CateringDetailsModal from "./CateringDetailsModal";
-import { Id } from "../../../../convex/_generated/dataModel";
+import { Id } from "../../../convex/_generated/dataModel";
 
 type CateringRequest = {
   _id: Id<"cateringRequests">;

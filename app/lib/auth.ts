@@ -1,29 +1,36 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../../convex/_generated/api";
 
 /**
- * Simple password-based authentication for admin dashboard
+ * User authentication for admin dashboard
  * Uses secure HTTP-only cookies for session management
+ * Stores user email in session and fetches role from Convex
  */
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123"; // Default for dev
 const COOKIE_NAME = "admin_session";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+if (!convexUrl) {
+  throw new Error("NEXT_PUBLIC_CONVEX_URL is not set");
+}
+
+const convex = new ConvexHttpClient(convexUrl);
+
 /**
- * Verify admin password and create session
+ * Create session with user email
  */
-export async function login(password: string): Promise<boolean> {
-  if (password === ADMIN_PASSWORD) {
-    const cookieStore = await cookies();
-    cookieStore.set(COOKIE_NAME, "authenticated", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: COOKIE_MAX_AGE,
-    });
-    return true;
-  }
-  return false;
+export async function login(email: string): Promise<boolean> {
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE_NAME, email, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: COOKIE_MAX_AGE,
+  });
+  return true;
 }
 
 /**
@@ -32,7 +39,16 @@ export async function login(password: string): Promise<boolean> {
 export async function isAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
   const session = cookieStore.get(COOKIE_NAME);
-  return session?.value === "authenticated";
+  return !!session?.value;
+}
+
+/**
+ * Get authenticated user email from session
+ */
+export async function getAuthenticatedEmail(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const session = cookieStore.get(COOKIE_NAME);
+  return session?.value || null;
 }
 
 /**
@@ -55,20 +71,20 @@ export async function requireAuth() {
 
 /**
  * Get user role from session
- * For now, we'll use a simple approach: check if authenticated
- * In a real app, you'd store the user email/role in the session
- * 
- * TODO: Enhance to store user email in session and fetch role from Convex
+ * Fetches the user from Convex based on email stored in session
  */
 export async function getUserRole(): Promise<"admin" | "jobs" | "catering" | "both" | null> {
-  const authenticated = await isAuthenticated();
-  if (!authenticated) {
+  const email = await getAuthenticatedEmail();
+  if (!email) {
     return null;
   }
   
-  // For now, default to admin if authenticated
-  // In production, you'd fetch the actual user role from Convex
-  // based on the email stored in the session
-  return "admin";
+  try {
+    const user = await convex.query(api.admin.getUserByEmail, { email });
+    return user?.role || null;
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    return null;
+  }
 }
 
