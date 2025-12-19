@@ -60,14 +60,14 @@ export default function CateringTable() {
               catering.map((request) => (
                 <tr
                   key={request._id}
-                  onClick={() => setSelectedRequest(request)}
+                  onClick={() => setSelectedRequest(request as CateringRequest)}
                   className="hover:bg-gray-50 cursor-pointer transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {request.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(request.eventDate).toLocaleDateString("en-US", {
+                    {new Date(request.eventDate || "").toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "short",
                       day: "numeric",

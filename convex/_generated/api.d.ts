@@ -9,8 +9,12 @@
  */
 
 import type * as admin from "../admin.js";
+import type * as cateringFormSchema from "../cateringFormSchema.js";
 import type * as cateringRequests from "../cateringRequests.js";
+import type * as formConfig from "../formConfig.js";
 import type * as jobApplications from "../jobApplications.js";
+import type * as jobFormSchema from "../jobFormSchema.js";
+import type * as locations from "../locations.js";
 
 import type {
   ApiFromModules,
@@ -20,8 +24,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
+  cateringFormSchema: typeof cateringFormSchema;
   cateringRequests: typeof cateringRequests;
+  formConfig: typeof formConfig;
   jobApplications: typeof jobApplications;
+  jobFormSchema: typeof jobFormSchema;
+  locations: typeof locations;
 }>;
 
 /**
