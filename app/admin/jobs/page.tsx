@@ -13,7 +13,10 @@ export default async function AdminJobsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Job Applications</h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Job Applications</h1>
+        <p className="text-gray-600">Manage and review job applications from candidates</p>
+      </div>
       <JobsTable />
     </div>
   );

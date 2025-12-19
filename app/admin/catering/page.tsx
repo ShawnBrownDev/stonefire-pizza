@@ -13,7 +13,10 @@ export default async function AdminCateringPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Catering Requests</h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Catering Requests</h1>
+        <p className="text-gray-600">Review and process catering requests from customers</p>
+      </div>
       <CateringTable />
     </div>
   );
