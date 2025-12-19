@@ -1,0 +1,19 @@
+# Bun configuration file
+# https://bun.sh/docs/cli/bunfig
+
+[install]
+# Automatically install peer dependencies
+auto = true
+
+# Install devDependencies by default
+dev = true
+
+# Use exact versions (no ^ or ~)
+exact = false
+
+# Production mode (skip devDependencies)
+production = false
+
+# Optional: Set registry (defaults to npm registry)
+# registry = "https://registry.npmjs.org"
+
