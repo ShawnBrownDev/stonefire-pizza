@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-[#f5f3f0]">
+      <section className="bg-[#f5f3f0] relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Text Content */}
@@ -53,10 +53,14 @@ export default function Home() {
             </div>
           </div>
         </div>
+        {/* Decorative Divider */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8B0000]/20 to-transparent"></div>
       </section>
 
       {/* Our Oven Section */}
-      <section className="bg-[#f5f3f0] py-16">
+      <section className="bg-white py-20 sm:py-24 relative shadow-sm">
+        {/* Top decorative element */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B0000]/10 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Text Content */}
@@ -89,11 +93,19 @@ export default function Home() {
             </div>
           </div>
         </div>
+        {/* Bottom decorative element */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B0000]/10 to-transparent"></div>
       </section>
 
       {/* Menu Highlights Section */}
-      <section className="bg-[#f9f7f4] py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-[#f9f7f4] py-20 sm:py-24 relative">
+        {/* Top wave divider */}
+        <div className="absolute top-0 left-0 right-0 h-12 bg-white">
+          <svg className="w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,0 C300,60 600,60 900,30 C1050,15 1125,15 1200,30 L1200,120 L0,120 Z" fill="#f9f7f4"></path>
+          </svg>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-[#2c2c2c] mb-3">
               Menu Highlights
@@ -102,7 +114,7 @@ export default function Home() {
               Hand-picked favorites from our wood-fired oven
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             {/* Classic Pepperoni */}
             <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
             <div className="h-48 relative overflow-hidden">
@@ -189,10 +201,16 @@ export default function Home() {
             </Link>
           </div>
         </div>
+        {/* Bottom wave divider */}
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-[#8B0000]">
+          <svg className="w-full h-full" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,120 C300,60 600,60 900,90 C1050,105 1125,105 1200,90 L1200,0 L0,0 Z" fill="#f9f7f4"></path>
+          </svg>
+        </div>
       </section>
 
       {/* Planning a Party Section */}
-      <section className="bg-[#8B0000] py-16">
+      <section className="bg-[#8B0000] py-20 sm:py-24 relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
             Planning a Party?
@@ -210,10 +228,19 @@ export default function Home() {
             Or call us at (012) 345-6789 to order
           </p>
         </div>
+        {/* Decorative pattern overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-full h-full" style={{
+            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+          }}></div>
+        </div>
       </section>
 
       {/* Join the Stonefire Team Section */}
-      <section className="bg-[#f9f7f4] py-16">
+      <section className="bg-white py-20 sm:py-24 relative shadow-sm">
+        {/* Top decorative divider */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8B0000]/20 to-transparent"></div>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-[#2c2c2c] mb-6">
             Join the Stonefire Team
@@ -228,10 +255,14 @@ export default function Home() {
             View Open Positions
           </Link>
         </div>
+        {/* Bottom decorative divider */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8B0000]/20 to-transparent"></div>
       </section>
 
       {/* Visit Us Section */}
-      <section className="bg-[#f5f3f0] py-16">
+      <section className="bg-[#f5f3f0] py-20 sm:py-24 relative">
+        {/* Top decorative element */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#8B0000]/10 to-transparent"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left: Map */}
