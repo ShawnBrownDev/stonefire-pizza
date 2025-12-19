@@ -11,9 +11,12 @@ export default async function AdminLayout({
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   const isLoginPage = pathname === "/admin/login";
+  const isSetupPage = pathname === "/admin/setup";
+  const isTestUserPage = pathname === "/admin/test-user";
+  const isPublicPage = isLoginPage || isSetupPage || isTestUserPage;
   
-  // Only require auth if not on login page
-  if (!isLoginPage) {
+  // Only require auth if not on login or setup page
+  if (!isPublicPage) {
     const authenticated = await isAuthenticated();
     if (!authenticated) {
       redirect("/admin/login");
@@ -24,8 +27,8 @@ export default async function AdminLayout({
   const authenticated = await isAuthenticated();
   const userRole = authenticated ? await getUserRole() : null;
 
-  // Don't show navbar on login page
-  if (isLoginPage) {
+  // Don't show navbar on login or setup page
+  if (isPublicPage) {
     return <>{children}</>;
   }
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 
 interface AddUserFormProps {
   onClose: () => void;
@@ -11,6 +11,7 @@ interface AddUserFormProps {
 
 export default function AddUserForm({ onClose, onSuccess }: AddUserFormProps) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "jobs" | "catering" | "both">("jobs");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,8 +22,14 @@ export default function AddUserForm({ onClose, onSuccess }: AddUserFormProps) {
     setError("");
     setLoading(true);
 
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await createUser({ email, role });
+      await createUser({ email, password, role });
       onSuccess();
       // Refresh the page to show new user
       window.location.reload();
@@ -66,6 +73,23 @@ export default function AddUserForm({ onClose, onSuccess }: AddUserFormProps) {
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               required
             />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+              minLength={6}
+              placeholder="Minimum 6 characters"
+            />
+            <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters long</p>
           </div>
 
           <div>

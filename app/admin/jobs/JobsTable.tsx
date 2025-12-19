@@ -1,10 +1,10 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 import { useState } from "react";
 import JobDetailsModal from "./JobDetailsModal";
-import { Id } from "../../../../convex/_generated/dataModel";
+import { Id } from "../../../convex/_generated/dataModel";
 
 type JobApplication = {
   _id: Id<"jobApplications">;

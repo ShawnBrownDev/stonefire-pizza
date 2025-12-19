@@ -10,6 +10,8 @@ import { useState, useEffect } from "react";
  */
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [dragStart, setDragStart] = useState<number | null>(null);
+  const [dragCurrent, setDragCurrent] = useState<number | null>(null);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -17,6 +19,16 @@ export default function Navigation() {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleDragStart = (clientY: number, e?: React.MouseEvent) => {
+    // Only preventDefault for mouse events
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setDragStart(clientY);
+    setDragCurrent(clientY);
   };
 
   // Prevent body scroll when menu is open
@@ -30,6 +42,48 @@ export default function Navigation() {
       document.body.style.overflow = "unset";
     };
   }, [isMenuOpen]);
+
+  // Global drag handlers to allow dragging even when cursor moves outside
+  useEffect(() => {
+    if (dragStart === null) return;
+
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (dragStart !== null) {
+        setDragCurrent(e.clientY);
+      }
+    };
+
+    const handleGlobalTouchMove = (e: TouchEvent) => {
+      if (dragStart !== null) {
+        e.preventDefault();
+        setDragCurrent(e.touches[0].clientY);
+      }
+    };
+
+
+    const handleGlobalEnd = () => {
+      if (dragStart !== null && dragCurrent !== null) {
+        const dragDistance = dragCurrent - dragStart;
+        if (dragDistance > 50) {
+          setIsMenuOpen(false);
+        }
+      }
+      setDragStart(null);
+      setDragCurrent(null);
+    };
+
+    document.addEventListener("mousemove", handleGlobalMouseMove);
+    document.addEventListener("mouseup", handleGlobalEnd);
+    document.addEventListener("touchmove", handleGlobalTouchMove, { passive: false });
+    document.addEventListener("touchend", handleGlobalEnd);
+
+    return () => {
+      document.removeEventListener("mousemove", handleGlobalMouseMove);
+      document.removeEventListener("mouseup", handleGlobalEnd);
+      document.removeEventListener("touchmove", handleGlobalTouchMove);
+      document.removeEventListener("touchend", handleGlobalEnd);
+    };
+  }, [dragStart, dragCurrent]);
 
   return (
     <nav className="bg-[#f5f3f0]">
@@ -128,13 +182,33 @@ export default function Navigation() {
 
         {/* Mobile Menu - Bottom Sheet */}
         <div
-          className={`fixed bottom-0 left-0 right-0 bg-gradient-to-b from-[#f5f3f0] to-white z-40 md:hidden transition-transform duration-500 ease-out rounded-t-3xl shadow-2xl border-t-4 border-[#8B0000] ${
-            isMenuOpen ? "translate-y-0" : "translate-y-full"
+          className={`fixed bottom-0 left-0 right-0 bg-gradient-to-b from-[#f5f3f0] to-white z-40 md:hidden rounded-t-3xl shadow-2xl border-t-4 border-[#8B0000] ${
+            dragStart === null ? "transition-transform duration-500 ease-out" : ""
+          } ${
+            isMenuOpen && dragStart === null ? "translate-y-0" : dragStart === null ? "translate-y-full" : ""
           }`}
-          style={{ height: "90vh", maxHeight: "90vh" }}
+          style={{ 
+            height: "90vh", 
+            maxHeight: "90vh",
+            transform: dragStart !== null && dragCurrent !== null
+              ? `translateY(${Math.max(0, dragCurrent - dragStart)}px)`
+              : undefined
+          }}
         >
           {/* Drag Handle */}
-          <div className="flex justify-center pt-2 pb-1.5">
+          <div 
+            data-drag-handle
+            className="flex justify-center pt-2 pb-1.5 cursor-pointer touch-none select-none"
+            onClick={() => {
+              if (dragStart === null) {
+                closeMenu();
+              }
+            }}
+            onMouseDown={(e) => handleDragStart(e.clientY, e)}
+            onTouchStart={(e) => {
+              handleDragStart(e.touches[0].clientY);
+            }}
+          >
             <div className="w-16 h-1.5 bg-[#8B0000] rounded-full"></div>
           </div>
 
@@ -152,8 +226,8 @@ export default function Navigation() {
 
           {/* Menu Content */}
           <div className="relative z-10 flex flex-col h-full">
-            {/* Header with Logo and Close Button */}
-            <div className="flex justify-between items-center px-4 py-2 border-b-2 border-[#8B0000]/20 flex-shrink-0 bg-gradient-to-r from-[#8B0000]/5 to-transparent">
+            {/* Header with Logo */}
+            <div className="flex justify-center items-center px-4 py-2 border-b-2 border-[#8B0000]/20 flex-shrink-0 bg-gradient-to-r from-[#8B0000]/5 to-transparent">
               <Link href="/" onClick={closeMenu} className="flex items-center">
                 <Image
                   src="/stonefiePizza.png"
@@ -164,30 +238,11 @@ export default function Navigation() {
                   style={{ width: "200px", height: "auto" }}
                 />
               </Link>
-              <button
-                onClick={closeMenu}
-                className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#8B0000] to-[#700000] hover:from-[#a00000] hover:to-[#8B0000] transition-all shadow-lg hover:shadow-xl active:scale-95"
-                aria-label="Close menu"
-              >
-                <svg
-                  className="w-6 h-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={3}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
             </div>
 
-            {/* Scrollable Navigation Links */}
-            <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
-              <nav className="space-y-0.5">
+            {/* Navigation Links - No scrolling needed */}
+            <div className="flex-1 px-4 py-3 flex items-center justify-center min-h-0">
+              <nav className="space-y-1 w-full">
                 {[
                   { href: "/menu", label: "Menu" },
                   { href: "/", label: "About" },
@@ -200,14 +255,14 @@ export default function Navigation() {
                     key={item.label}
                     href={item.href}
                     onClick={closeMenu}
-                    className={`block group relative py-3 px-5 rounded-xl transition-all ${
+                    className={`block group relative py-2.5 px-5 rounded-xl transition-all ${
                       isMenuOpen ? "animate-slide-up opacity-100" : "opacity-0"
                     } hover:bg-gradient-to-r hover:from-[#8B0000]/10 hover:to-[#8B0000]/5 active:bg-[#8B0000]/15 border-l-4 border-transparent hover:border-[#8B0000]`}
                     style={{
                       animationDelay: isMenuOpen ? `${index * 50}ms` : "0ms",
                     }}
                   >
-                    <span className="text-xl font-bold text-[#1a1a1a] group-hover:text-[#8B0000] transition-colors duration-300 relative inline-block">
+                    <span className="text-lg font-bold text-[#1a1a1a] group-hover:text-[#8B0000] transition-colors duration-300 relative inline-block">
                       {item.label}
                     </span>
                   </Link>
@@ -216,7 +271,7 @@ export default function Navigation() {
             </div>
 
             {/* Order Now Button - Always Visible */}
-            <div className="px-4 py-2 border-t border-[#8B0000]/10 flex-shrink-0 bg-gradient-to-t from-white to-transparent">
+            <div className="px-4 py-3 border-t border-[#8B0000]/10 flex-shrink-0 bg-gradient-to-t from-white to-transparent">
               <div
                 className={`${
                   isMenuOpen ? "animate-slide-up opacity-100" : "opacity-0"

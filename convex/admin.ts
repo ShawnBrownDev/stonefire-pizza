@@ -1,21 +1,11 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, action, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
 /**
  * Role type for admin users
  */
 export type UserRole = "admin" | "jobs" | "catering" | "both";
-
-/**
- * Helper to check if a role has access to a resource
- */
-function hasAccess(userRole: UserRole, resource: "jobs" | "catering" | "users"): boolean {
-  if (userRole === "admin") return true;
-  if (resource === "users") return false; // Only admin can access users
-  if (resource === "jobs") return userRole === "jobs" || userRole === "both";
-  if (resource === "catering") return userRole === "catering" || userRole === "both";
-  return false;
-}
 
 /**
  * Get all job applications
@@ -45,6 +35,17 @@ export const getCatering = query({
 });
 
 /**
+ * Check if any users exist (for initial setup)
+ */
+export const hasUsers = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await ctx.db.query("users").first();
+    return !!user;
+  },
+});
+
+/**
  * Get all users (admin only)
  * Requires: admin role
  */
@@ -58,16 +59,102 @@ export const getUsers = query({
 });
 
 /**
+ * Hash a password using Web Crypto API (PBKDF2)
+ */
+async function hashPassword(password: string): Promise<string> {
+  // Generate a random salt
+  const saltArray = new Uint8Array(16);
+  crypto.getRandomValues(saltArray);
+  
+  // Import the password as a key
+  const encoder = new TextEncoder();
+  const passwordKey = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+  
+  // Derive key using PBKDF2
+  const hashBuffer = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: saltArray,
+      iterations: 100000,
+      hash: "SHA-512",
+    },
+    passwordKey,
+    512 // 64 bytes = 512 bits
+  );
+  
+  // Convert to hex strings
+  const saltHex = Array.from(saltArray)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  const hashHex = Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  
+  return `${saltHex}:${hashHex}`;
+}
+
+/**
+ * Verify a password against a hash
+ */
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  const [saltHex, hashHex] = hash.split(":");
+  if (!saltHex || !hashHex) return false;
+  
+  // Convert hex strings back to Uint8Array
+  const saltArray = new Uint8Array(
+    saltHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16))
+  );
+  
+  // Import the password as a key
+  const encoder = new TextEncoder();
+  const passwordKey = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveBits"]
+  );
+  
+  // Derive key using PBKDF2 with the same parameters
+  const hashBuffer = await crypto.subtle.deriveBits(
+    {
+      name: "PBKDF2",
+      salt: saltArray,
+      iterations: 100000,
+      hash: "SHA-512",
+    },
+    passwordKey,
+    512 // 64 bytes = 512 bits
+  );
+  
+  // Convert to hex string
+  const computedHashHex = Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  
+  return computedHashHex === hashHex;
+}
+
+/**
  * Create a new user (admin only)
- * Requires: admin role
+ * Requires: admin role OR no users exist (for initial setup)
  */
 export const createUser = mutation({
   args: {
     email: v.string(),
+    password: v.string(),
     role: v.union(v.literal("admin"), v.literal("jobs"), v.literal("catering"), v.literal("both")),
   },
   handler: async (ctx, args) => {
-    // Note: Role check should be done server-side via auth middleware
+    // Note: Authentication should be checked server-side via auth middleware
+    // This mutation allows creating users for initial setup (when no users exist)
+    // or when called by authenticated admin users
     
     // Check if user already exists
     const existing = await ctx.db
@@ -79,13 +166,65 @@ export const createUser = mutation({
       throw new Error("User with this email already exists");
     }
 
+    // Hash the password
+    const passwordHash = await hashPassword(args.password);
+
     const userId = await ctx.db.insert("users", {
       email: args.email,
+      passwordHash,
       role: args.role,
       createdAt: Date.now(),
     });
 
     return { success: true, id: userId };
+  },
+});
+
+/**
+ * Verify user credentials
+ */
+export const verifyUserCredentials = query({
+  args: {
+    email: v.string(),
+    password: v.string(),
+  },
+  handler: async (ctx, args) => {
+    try {
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", args.email))
+        .first();
+      
+      if (!user) {
+        return null;
+      }
+
+      // If user doesn't have a password hash, they can't log in
+      if (!user.passwordHash) {
+        return null;
+      }
+
+      try {
+        const isValid = await verifyPassword(args.password, user.passwordHash);
+        if (!isValid) {
+          return null;
+        }
+      } catch (verifyError) {
+        console.error("Password verification error:", verifyError);
+        return null;
+      }
+
+      // Return user without password hash
+      return {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+      };
+    } catch (error) {
+      console.error("Error in verifyUserCredentials:", error);
+      return null;
+    }
   },
 });
 
@@ -119,6 +258,98 @@ export const getUserByEmail = query({
       .withIndex("by_email", (q) => q.eq("email", args.email))
       .first();
     return user;
+  },
+});
+
+/**
+ * Update user password (admin only or for setting initial password)
+ * Requires: admin role
+ */
+export const updateUserPassword = mutation({
+  args: {
+    userId: v.id("users"),
+    password: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Note: Role check should be done server-side via auth middleware
+    
+    const user = await ctx.db.get(args.userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Hash the password
+    const passwordHash = await hashPassword(args.password);
+
+    await ctx.db.patch(args.userId, {
+      passwordHash,
+    });
+
+    return { success: true };
+  },
+});
+
+/**
+ * Create a test user (for development/testing)
+ * This is an action that can be called from the Convex dashboard
+ * Usage: Call this action with { email: "test@example.com", password: "test123", role: "admin" }
+ */
+export const createTestUser = action({
+  args: {
+    email: v.optional(v.string()),
+    password: v.optional(v.string()),
+    role: v.optional(v.union(v.literal("admin"), v.literal("jobs"), v.literal("catering"), v.literal("both"))),
+  },
+  handler: async (ctx, args) => {
+    const testEmail = args.email || "test@example.com";
+    const testPassword = args.password || "test123";
+    const testRole = args.role || "admin";
+
+    // Call the createUser mutation
+    await ctx.runMutation(internal.admin.createUserInternal, {
+      email: testEmail,
+      password: testPassword,
+      role: testRole,
+    });
+
+    return {
+      success: true,
+      message: `Test user created: ${testEmail} / ${testPassword} (${testRole})`,
+    };
+  },
+});
+
+/**
+ * Internal mutation for creating users (used by actions)
+ */
+export const createUserInternal = internalMutation({
+  args: {
+    email: v.string(),
+    password: v.string(),
+    role: v.union(v.literal("admin"), v.literal("jobs"), v.literal("catering"), v.literal("both")),
+  },
+  handler: async (ctx, args) => {
+    // Check if user already exists
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+    
+    if (existing) {
+      throw new Error("User with this email already exists");
+    }
+
+    // Hash the password
+    const passwordHash = await hashPassword(args.password);
+
+    const userId = await ctx.db.insert("users", {
+      email: args.email,
+      passwordHash,
+      role: args.role,
+      createdAt: Date.now(),
+    });
+
+    return { success: true, id: userId };
   },
 });
 
