@@ -5,8 +5,8 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 
 export default function TestUserPage() {
-  const [email, setEmail] = useState("test@example.com");
-  const [password, setPassword] = useState("test123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "jobs" | "catering" | "both">("admin");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -25,10 +25,10 @@ export default function TestUserPage() {
         password,
         role,
       });
-      setSuccess(`Test user created successfully! Email: ${email}, Password: ${password}, Role: ${role}`);
+      setSuccess(`Test user created successfully! Email: ${email}, Password: [hidden], Role: ${role}`);
       // Reset form
-      setEmail("test@example.com");
-      setPassword("test123");
+      setEmail("");
+      setPassword("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create test user");
     } finally {
@@ -116,13 +116,8 @@ export default function TestUserPage() {
 
         <div className="mt-6 pt-6 border-t border-gray-200">
           <p className="text-xs text-gray-500">
-            <strong>Quick Test Users:</strong>
+            <strong>Note:</strong> Enter your desired email and password (minimum 6 characters) to create a test user.
           </p>
-          <div className="mt-2 space-y-1 text-xs text-gray-600">
-            <div>Admin: test@example.com / test123</div>
-            <div>Jobs: jobs@example.com / test123</div>
-            <div>Catering: catering@example.com / test123</div>
-          </div>
         </div>
       </div>
     </div>

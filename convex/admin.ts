@@ -292,18 +292,27 @@ export const updateUserPassword = mutation({
 /**
  * Create a test user (for development/testing)
  * This is an action that can be called from the Convex dashboard
- * Usage: Call this action with { email: "test@example.com", password: "test123", role: "admin" }
+ * Usage: Call this action with { email: "test@example.com", password: "yourpassword", role: "admin" }
+ * Note: All parameters are required for security
  */
 export const createTestUser = action({
   args: {
-    email: v.optional(v.string()),
-    password: v.optional(v.string()),
-    role: v.optional(v.union(v.literal("admin"), v.literal("jobs"), v.literal("catering"), v.literal("both"))),
+    email: v.string(),
+    password: v.string(),
+    role: v.union(v.literal("admin"), v.literal("jobs"), v.literal("catering"), v.literal("both")),
   },
   handler: async (ctx, args) => {
-    const testEmail = args.email || "test@example.com";
-    const testPassword = args.password || "test123";
-    const testRole = args.role || "admin";
+    if (!args.email || !args.password) {
+      throw new Error("Email and password are required");
+    }
+
+    if (args.password.length < 6) {
+      throw new Error("Password must be at least 6 characters long");
+    }
+
+    const testEmail = args.email;
+    const testPassword = args.password;
+    const testRole = args.role;
 
     // Call the createUser mutation
     await ctx.runMutation(internal.admin.createUserInternal, {
@@ -314,7 +323,7 @@ export const createTestUser = action({
 
     return {
       success: true,
-      message: `Test user created: ${testEmail} / ${testPassword} (${testRole})`,
+      message: `Test user created: ${testEmail} / [password hidden] (${testRole})`,
     };
   },
 });
