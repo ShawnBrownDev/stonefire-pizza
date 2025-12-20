@@ -25,12 +25,14 @@ export default function Home() {
                 Experience the authentic taste of wood-fired pizza made with locally sourced ingredients and fresh, flavorful recipes. Every bite is crafted with passion and tradition.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link
-                  href="/order"
+                <a
+                  href={process.env.NEXT_PUBLIC_TOAST_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-[#8B0000] hover:bg-[#700000] text-white font-semibold py-3 px-8 rounded transition-colors"
                 >
                   Order Now
-                </Link>
+                </a>
                 <Link
                   href="/menu"
                   className="bg-[#f5f3f0] border-2 border-[#8B0000] text-[#8B0000] hover:bg-[#8B0000] hover:text-white font-semibold py-3 px-8 rounded transition-colors"
