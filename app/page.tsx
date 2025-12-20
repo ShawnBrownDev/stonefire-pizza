@@ -119,7 +119,7 @@ export default function Home() {
             <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
             <div className="h-48 relative overflow-hidden">
                 <Image
-                  src="/meatlovers.png"
+                  src="/meatLovers.png"
                   alt="Meat Lovers Pizza"
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
@@ -138,7 +138,7 @@ export default function Home() {
             <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
             <div className="h-48 relative overflow-hidden">
                 <Image
-                  src="/margherita.png"
+                  src="/Margherita.png"
                   alt="Margherita Pizza"
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
