@@ -86,7 +86,7 @@ export default function Navigation() {
   }, [dragStart, dragCurrent]);
 
   return (
-    <nav className="bg-[#f5f3f0]">
+    <nav className="bg-[#d4c5b0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-24 sm:h-28">
           {/* Logo */}
@@ -111,12 +111,6 @@ export default function Navigation() {
               Menu
             </Link>
             <Link
-              href="/"
-              className="text-[#2c2c2c] hover:text-[#8B0000] transition-colors font-medium"
-            >
-              About
-            </Link>
-            <Link
               href="/catering"
               className="text-[#2c2c2c] hover:text-[#8B0000] transition-colors font-medium"
             >
@@ -129,10 +123,10 @@ export default function Navigation() {
               Jobs
             </Link>
             <Link
-              href="/"
+              href="/merch"
               className="text-[#2c2c2c] hover:text-[#8B0000] transition-colors font-medium"
             >
-              Location
+              Merch
             </Link>
             <Link
               href="/contact"
@@ -142,7 +136,7 @@ export default function Navigation() {
             </Link>
             <div className="flex items-center space-x-3 ml-4">
               <a
-                href={process.env.NEXT_PUBLIC_TOAST_URL || "/order"}
+                href={process.env.NEXT_PUBLIC_TOAST_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-[#8B0000] hover:bg-[#700000] text-white font-semibold py-2 px-6 rounded transition-colors"
@@ -182,7 +176,7 @@ export default function Navigation() {
 
         {/* Mobile Menu - Bottom Sheet */}
         <div
-          className={`fixed bottom-0 left-0 right-0 bg-gradient-to-b from-[#f5f3f0] to-white z-40 md:hidden rounded-t-3xl shadow-2xl border-t-4 border-[#8B0000] ${
+          className={`fixed bottom-0 left-0 right-0 bg-gradient-to-b from-[#d4c5b0] to-white z-40 md:hidden rounded-t-3xl shadow-2xl border-t-4 border-[#8B0000] ${
             dragStart === null ? "transition-transform duration-500 ease-out" : ""
           } ${
             isMenuOpen && dragStart === null ? "translate-y-0" : dragStart === null ? "translate-y-full" : ""
@@ -245,10 +239,9 @@ export default function Navigation() {
               <nav className="space-y-1 w-full">
                 {[
                   { href: "/menu", label: "Menu" },
-                  { href: "/", label: "About" },
                   { href: "/catering", label: "Catering" },
                   { href: "/jobs", label: "Jobs" },
-                  { href: "/", label: "Location" },
+                  { href: "/merch", label: "Merch" },
                   { href: "/contact", label: "Contact" },
                 ].map((item, index) => (
                   <Link
@@ -281,7 +274,7 @@ export default function Navigation() {
                 }}
               >
                 <a
-                  href={process.env.NEXT_PUBLIC_TOAST_URL || "/order"}
+                  href={process.env.NEXT_PUBLIC_TOAST_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={closeMenu}

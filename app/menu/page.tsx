@@ -72,7 +72,9 @@ export default function Menu() {
             All pizzas available for pickup or delivery
           </p>
           <a
-            href="/order"
+            href={process.env.NEXT_PUBLIC_TOAST_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors text-lg inline-block"
           >
             Order Now
